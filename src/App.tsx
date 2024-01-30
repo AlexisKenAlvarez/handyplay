@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SpeechRecognition, {
   useSpeechRecognition,
 } from "react-speech-recognition";
@@ -8,7 +8,7 @@ import { cn } from "./utils/utils";
 const App = () => {
   const [seekTime, handleSeekTime] = useState<number>(5);
   const [listening, setListening] = useState(false);
-  const [hidden, setHidden] = useState(false)
+  const [hidden, setHidden] = useState(false);
 
   const commands = [
     {
@@ -18,7 +18,7 @@ const App = () => {
       },
     },
     {
-      command: ["play", "tuloy", "post"],
+      command: ["play", "tuloy"],
       callback: ({ resetTranscript }: { resetTranscript: () => void }) => {
         handlePlayback("play"), resetTranscript();
       },
@@ -70,6 +70,7 @@ const App = () => {
     transcript,
     browserSupportsSpeechRecognition,
     isMicrophoneAvailable,
+    resetTranscript
   } = useSpeechRecognition({ clearTranscriptOnListen: true, commands });
 
   const handlePlayback = async (type: string) => {
@@ -185,11 +186,25 @@ const App = () => {
       </div>
     );
   }
+  useEffect(() => {
+    const interval = setInterval(() => {
+      resetTranscript()
+    }, 3000);
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [transcript]);
 
   return (
-    <div className={cn("w-[20rem] h-[25rem] bg-black p-10 opacity-100 transition-all ease-in-out duration-300 max-h-full overflow-hidden", {
-      "opacity-0 max-h-0 p-0": hidden,
-    })}>
+    <div
+      className={cn(
+        "w-[20rem] h-[25rem] bg-black p-10 opacity-100 transition-all ease-in-out duration-300 max-h-full overflow-hidden",
+        {
+          "opacity-0 max-h-0 p-0": hidden,
+        }
+      )}
+    >
       <h1 className="text-white text-2xl text-center">
         {listening ? "Now listening" : "Not listening"}
       </h1>
@@ -224,24 +239,6 @@ const App = () => {
           }}
         >
           Stop Mic
-        </button>
-
-        <button
-          className="bg-white px-5 py-2"
-          onClick={() => {
-            handlePage("next");
-          }}
-        >
-          Go next
-        </button>
-
-        <button
-          className="bg-white px-5 py-2"
-          onClick={() => {
-            handlePage("back");
-          }}
-        >
-          Go back
         </button>
 
         <div className="">
